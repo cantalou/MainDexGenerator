@@ -1,0 +1,13 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+repositories {
+    google()
+    jcenter()
+}
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation 'com.android.tools.build:gradle:3.2.0'
+    testImplementation 'junit:junit:4.12'
+}

@@ -9,13 +9,13 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 }
 
-
-group='com.cantalou.android.tools.mainDexGenerator'
-version='1.0.0'
-uploadArchives{
+uploadArchives {
     repositories {
         mavenDeployer {
             repository(url: uri('./publish'))
+            pom.groupId = "com.cantalou.android.tools"
+            pom.artifactId = "mainDexGenerator"
+            pom.version = "1.0.0"
         }
     }
 }

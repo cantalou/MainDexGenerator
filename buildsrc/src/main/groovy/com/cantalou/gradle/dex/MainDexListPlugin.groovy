@@ -1,11 +1,13 @@
 package com.cantalou.gradle.dex
 
+import com.android.build.api.transform.SecondaryFile
 import com.android.build.api.transform.Transform
 import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.internal.dsl.DexOptions
 import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.scope.VariantScope
-import com.android.build.gradle.internal.transforms.MultiDexTransform
+import com.android.build.gradle.internal.transforms.DexMergerTransform
+import com.android.build.gradle.internal.transforms.DexTransform
 import com.android.builder.model.Version
 import com.cantalou.gradle.dex.tasks.CreateManifestKeepTask
 import com.cantalou.gradle.dex.tramsform.CustomMainDexTransform
@@ -41,7 +43,7 @@ class MainDexListPlugin implements Plugin<Project> {
         createTask(project)
     }
 
-    private void createTask(Project project) {
+    void createTask(Project project) {
         def originalAppManifestFile = project.android.sourceSets.main.manifest.srcFile
 
         project.android.applicationVariants.all { ApplicationVariant variant ->
@@ -54,15 +56,15 @@ class MainDexListPlugin implements Plugin<Project> {
             def capitalizeName = variant.name.capitalize()
 
             //legacy_multidex_main_dex_list
-            def outputDir = project.buildDir.absolutePath + "/" + FD_INTERMEDIATES + "/multi-dex/" + variant.dirName
+            def outputDir = new File(project.buildDir.absolutePath + "/" + FD_INTERMEDIATES + "/multi-dex/" + variant.dirName)
             def manifestKeepFile = new File(outputDir, "manifest_keep.txt")
-            def mainDexListFile = new File(outputDir, "maindexlist.txt")
+            manifestKeepFile.parentFile.mkdirs()
 
             CreateManifestKeepTask createManifestKeepTask = project.tasks.create("createNewManifestKeep${capitalizeName}", CreateManifestKeepTask.class)
+            createManifestKeepTask.variantScope = variantScope
             createManifestKeepTask.addManifest(originalAppManifestFile)
             createManifestKeepTask.configurations = copyConfigurations(project, variant.buildType.name)
             createManifestKeepTask.outputFile = manifestKeepFile
-            createManifestKeepTask.variantName = variant.name
 
             Task jarMergeTask = project.tasks.findByName("transformClassesWithJarMergingFor${capitalizeName}")
             if (jarMergeTask != null) {
@@ -74,17 +76,30 @@ class MainDexListPlugin implements Plugin<Project> {
                 createManifestKeepTask.dependsOn proguardTask
             }
 
-            def transformMultiDexListTask = project.tasks.findByName("transformClassesWithMultidexlistFor${capitalizeName}")
-            transformMultiDexListTask.dependsOn createManifestKeepTask
+            def multiDexListTask = project.tasks.findByName("transformClassesWithMultidexlistFor${capitalizeName}")
+            multiDexListTask.dependsOn createManifestKeepTask
 
-            MultiDexTransform multiDexTransform = getValue(task, TransformTask.class, "transform")
+            //DexMergerTransform, DexTransform
+            def mainDexListFile = new File(outputDir, "maindexlist.txt")
+            def dexTask = project.tasks.findByName("transformDexArchiveWithDexMergerFor${capitalizeName}")
+            if(dexTask == null){
+                dexTask = project.tasks.findByName("transformDexArchiveWithDexMergerFor${capitalizeName}")
+            }
+            Transform dexTransform = dexTask.transform
+            dexTransform.getSecondaryFiles().each { secondaryFile ->
+                mainDexListFile = secondaryFile.getFileCollection(project).singleFile
+            }
+
+            Transform mainDexTransform = multiDexListTask.transform
             DexOptions dexOptions = variantScope.getGlobalScope().getExtension().getDexOptions()
             CustomMainDexTransform customMainDexTransform = new CustomMainDexTransform(variantScope, dexOptions, null)
             customMainDexTransform.variantScope = variantScope
+            customMainDexTransform.outputDir = outputDir
             customMainDexTransform.manifestKeepListFile = manifestKeepFile
             customMainDexTransform.mainDexListFile = mainDexListFile
-            setValue(task, Transform.class, "transform", customMainDexTransform)
-            println "change transform for task " + transformMultiDexListTask.toString() + ", from " + multiDexTransform + " to " + customMainDexTransform
+            setValue(multiDexListTask, TransformTask.class, "transform", customMainDexTransform)
+            println "change mainDexTransform for " + multiDexListTask.toString() + " from " + mainDexTransform + " to " + customMainDexTransform
+
 
             ["collect${capitalizeName}MultiDexComponents", "createManifestKeep${capitalizeName}"].each {
                 Task task = project.tasks.findByName(it)
@@ -112,15 +127,16 @@ class MainDexListPlugin implements Plugin<Project> {
         configurations
     }
 
-    def getValue(Object instance, Class clazz, String fieldName) throws IllegalAccessException {
+    static def getValue(Object instance, Class clazz, String fieldName) throws IllegalAccessException {
         getField(clazz, fieldName, true).get(instance)
     }
 
-    void setValue(Object instance, Class clazz, String fieldName, Object value) {
-        getField(clazz, fieldName, true).set(instance, value)
+    static void setValue(Object instance, Class clazz, String fieldName, Object value) {
+        Field field = getField(clazz, fieldName, true)
+        field.set(instance, value)
     }
 
-    def getField(Class cls, String fieldName, boolean forceAccess) {
+    static def getField(Class cls, String fieldName, boolean forceAccess) {
         if (cls == null) {
             throw new IllegalArgumentException("The class must not be null")
         } else if (fieldName == null) {
@@ -139,7 +155,7 @@ class MainDexListPlugin implements Plugin<Project> {
                 } catch (NoSuchFieldException var7) {
                 }
             }
-            return new NoSuchFieldException(fieldName)
+            throw new NoSuchFieldException(fieldName)
         }
     }
 }

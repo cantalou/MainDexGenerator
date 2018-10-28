@@ -37,24 +37,35 @@ class CreateManifestKeepTask extends DefaultTask {
 
     VariantScope variantScope
 
+    private static final Set<String> KEEP_SPECS = ["application", "activity", "activity-alias", "service", "receiver", "provider", "instrumentation"] as Set
+
     void addManifest(File from) {
         manifestSources.add(from)
         println "add AndroidManifest.xml from ${from}"
     }
 
+    @InputFiles
     Set<File> getSources() {
         configurations.each { Configuration configuration ->
-            configuration.setCanBeResolved(true)
-            manifestSources.addAll(configuration.getFiles().findAll { it.name.endsWith(".aar") })
-            configuration.getDependencies().findAll {
-                it instanceof ProjectDependency && it.dependencyProject.hasProperty("android")
-            }.each {
-                manifestSources << it.dependencyProject.android.sourceSets.main.manifest.srcFile
+            try {
+                if (configuration.isCanBeResolved()) {
+                    configuration.setCanBeResolved(true)
+                }
+                manifestSources.addAll(configuration.getFiles().findAll { it.name.endsWith(".aar") })
+                configuration.getDependencies().findAll {
+                    it instanceof ProjectDependency && it.dependencyProject.hasProperty("android")
+                }.each {
+                    manifestSources << it.dependencyProject.android.sourceSets.main.manifest.srcFile
+                }
+            } catch (Exception e) {
+                println "Configuration ${configuration} can not be resolve "
+                //e.printStackTrace()
             }
         }
         return manifestSources
     }
 
+    @OutputFile
     File getOutputFile() {
         return outputFile
     }
@@ -72,12 +83,12 @@ class CreateManifestKeepTask extends DefaultTask {
         outputFile.withWriter { Writer out ->
             getSources().collect { File source ->
                 if (source.name.endsWith(".aar")) {
-                    File destDir = new File(cachedDir, dependencyFile.name + "." + Math.abs(dependencyFile.hashCode()))
+                    File destDir = new File(cachedDir, source.name + "." + Math.abs(source.hashCode()))
                     destDir.mkdirs()
                     def manifestFile = new File(destDir, FN_ANDROID_MANIFEST_XML)
                     if (!manifestFile.exists()) {
                         project.copy {
-                            from project.zipTree(dependencyFile)
+                            from project.zipTree(source)
                             include FN_ANDROID_MANIFEST_XML
                             into destDir
                         }
@@ -94,19 +105,11 @@ class CreateManifestKeepTask extends DefaultTask {
         }
     }
 
-    private static final Set<String> KEEP_SPECS = ImmutableSet.<String> builder()
-            .add("application")
-            .add("activity")
-            .add("activity-alias")
-            .add("service")
-            .add("receiver")
-            .add("provider")
-            .add("instrumentation")
-            .build()
-
     private static class ManifestHandler extends DefaultHandler {
 
-        private Writer out
+        def packageName
+
+        Writer out
 
         ManifestHandler(Writer out) {
             this.out = out
@@ -114,24 +117,33 @@ class CreateManifestKeepTask extends DefaultTask {
 
         @Override
         void startElement(String uri, String localName, String qName, Attributes attr) {
+
+            if (qName == "manifest") {
+                packageName = attr.getValue("package")
+            }
+
             if (KEEP_SPECS.contains(qName)) {
-                keepClass(attr.getValue("android:name"), out)
+                keepClass(attr.getValue("android:name"))
                 // Also keep the original application class when using instant-run.
-                keepClass(attr.getValue("name"), out)
+                keepClass(attr.getValue("name"))
+            }
+        }
+
+        void keepClass(String className) {
+            if (className != null) {
+                if (className.startsWith(".")) {
+                    className = packageName + className
+                }
+                try {
+                    out.write(className.replace('.', '/'))
+                    out.write("\n")
+                }
+                catch (IOException e) {
+                    throw new RuntimeException(e)
+                }
             }
         }
     }
 
-    private static void keepClass(String className, Writer out) {
-        if (className != null) {
-            try {
-                out.write(className.replace('.', '/'))
-                out.write("\n")
-            }
-            catch (IOException e) {
-                throw new RuntimeException(e)
-            }
-        }
-    }
 
 }

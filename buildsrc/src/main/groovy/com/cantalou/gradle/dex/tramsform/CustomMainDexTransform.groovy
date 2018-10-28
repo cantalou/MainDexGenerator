@@ -3,19 +3,18 @@ package com.cantalou.gradle.dex.tramsform
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
 import com.android.build.api.transform.*
-import com.android.build.gradle.internal.core.VariantConfiguration
 import com.android.build.gradle.internal.dsl.DexOptions
 import com.android.build.gradle.internal.pipeline.TransformManager
-import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.scope.VariantScope
 import com.android.build.gradle.internal.transforms.MultiDexTransform
+import com.android.builder.packaging.JarMerger
 import com.android.builder.sdk.TargetInfo
 import com.android.ide.common.process.ProcessException
+import com.android.utils.FileUtils
 import com.google.common.base.Charsets
 import com.google.common.base.Joiner
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSet
-import com.google.common.collect.Iterables
 import com.google.common.collect.Lists
 import com.google.common.io.Files
 import com.cantalou.gradle.dex.multidex.MainDexListBuilder
@@ -24,15 +23,11 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import proguard.ParseException
 
-import java.lang.reflect.Field
-import java.lang.reflect.Modifier
 import java.util.function.Function
 import java.util.stream.Collectors
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
-
-import static com.android.builder.model.AndroidProject.FD_INTERMEDIATES
 
 /**
  *
@@ -69,7 +64,7 @@ class CustomMainDexTransform extends Transform {
     CustomMainDexTransform(VariantScope variantScope, DexOptions dexOptions, File includeInMainDexJarFile) {
         this.variantScope = variantScope
         this.includeInMainDexJarFile = includeInMainDexJarFile
-        userMainDexKeepFile =  variantScope.getVariantConfiguration().getMultiDexKeepFile()
+        userMainDexKeepFile = variantScope.getVariantConfiguration().getMultiDexKeepFile()
         keepRuntimeAnnotatedClasses = dexOptions.getKeepRuntimeAnnotatedClasses()
     }
 
@@ -156,30 +151,33 @@ class CustomMainDexTransform extends Transform {
     @Override
     void transform(@NonNull TransformInvocation invocation) throws IOException, TransformException, InterruptedException {
         try {
-            File input = verifyInputs(invocation.getReferencedInputs())
-            shrinkJar(input)
-            computeList(input)
+            File jarFile = new File(outputDir, "combined_classes.jar")
+            mergeJar(invocation.getReferencedInputs(), jarFile)
+            shrinkJar(jarFile)
+            computeList(jarFile)
         }
         catch (ParseException | ProcessException e) {
             throw new TransformException(e)
         }
     }
 
-    private static File verifyInputs(@NonNull Collection<TransformInput> inputs) {
-        // Collect the inputs. There should be only one.
-        List<File> inputFiles = Lists.newArrayList()
-
-        for (TransformInput transformInput : inputs) {
-            for (JarInput jarInput : transformInput.getJarInputs()) {
-                inputFiles.add(jarInput.getFile())
+    private static void mergeJar(@NonNull Collection<TransformInput> inputs, File outputFile) {
+        JarMerger jarMerger = new JarMerger(outputFile.toPath(), JarMerger.CLASSES_ONLY)
+        for (TransformInput input : inputs) {
+            for (JarInput jarInput : input.getJarInputs()) {
+                if (jarInput.toString().contains("host_classes")) {
+                    println "Ignore class from ${jarInput}"
+                    continue
+                }
+                jarMerger.addJar(jarInput.getFile().toPath())
             }
 
-            for (DirectoryInput directoryInput : transformInput.getDirectoryInputs()) {
-                inputFiles.add(directoryInput.getFile())
+            for (DirectoryInput directoryInput : input.getDirectoryInputs()) {
+                println directoryInput.getFile().toPath()
+                jarMerger.addDirectory(directoryInput.getFile().toPath())
             }
         }
-
-        return Iterables.getOnlyElement(inputFiles)
+        jarMerger.close()
     }
 
     /**
