@@ -19,3 +19,17 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep class retrofit.** {*;}
+-dontwarn retrofit.**
+
+-keep class retrofit2.** {*;}
+-dontwarn retrofit2.**
+
+-keep class org.** {*;}
+-dontwarn org.**
+
+-keep class com.** {*;}
+-dontwarn com.**
+
+-keep class okio.** {*;}
+-dontwarn okio.**

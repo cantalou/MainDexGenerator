@@ -1,14 +1,10 @@
 package com.cantalou.gradle.dex
 
-import com.android.build.api.transform.SecondaryFile
 import com.android.build.api.transform.Transform
 import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.internal.dsl.DexOptions
 import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.scope.VariantScope
-import com.android.build.gradle.internal.transforms.DexMergerTransform
-import com.android.build.gradle.internal.transforms.DexTransform
-import com.android.builder.model.Version
 import com.cantalou.gradle.dex.tasks.CreateManifestKeepTask
 import com.cantalou.gradle.dex.tramsform.CustomMainDexTransform
 import org.gradle.api.Plugin
@@ -23,13 +19,9 @@ import static com.android.builder.model.AndroidProject.FD_INTERMEDIATES
 
 /**
  *
- * 1.定义CreateManifestKeepTask用于生成manifest_keep.txt文件
- * 2.替换MultiDexTransform, 生成mainDexListFile.txt文件
+ * @author cantalou
+ * @date 2018/09/17 16:30
  *
- * @author LinZhiWei
- * @date 2018年09月17日 16:30
- *
- * Copyright (c) 2018年, 4399 Network CO.ltd. All Rights Reserved.
  */
 class MainDexListPlugin implements Plugin<Project> {
 
@@ -37,8 +29,6 @@ class MainDexListPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-
-        println Version.ANDROID_GRADLE_PLUGIN_VERSION
 
         createTask(project)
     }
@@ -82,7 +72,7 @@ class MainDexListPlugin implements Plugin<Project> {
             //DexMergerTransform, DexTransform
             def mainDexListFile = new File(outputDir, "maindexlist.txt")
             def dexTask = project.tasks.findByName("transformDexArchiveWithDexMergerFor${capitalizeName}")
-            if(dexTask == null){
+            if (dexTask == null) {
                 dexTask = project.tasks.findByName("transformDexArchiveWithDexMergerFor${capitalizeName}")
             }
             Transform dexTransform = dexTask.transform
@@ -99,7 +89,6 @@ class MainDexListPlugin implements Plugin<Project> {
             customMainDexTransform.mainDexListFile = mainDexListFile
             setValue(multiDexListTask, TransformTask.class, "transform", customMainDexTransform)
             println "change mainDexTransform for " + multiDexListTask.toString() + " from " + mainDexTransform + " to " + customMainDexTransform
-
 
             ["collect${capitalizeName}MultiDexComponents", "createManifestKeep${capitalizeName}"].each {
                 Task task = project.tasks.findByName(it)

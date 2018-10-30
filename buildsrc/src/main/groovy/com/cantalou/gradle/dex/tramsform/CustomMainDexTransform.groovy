@@ -31,10 +31,8 @@ import java.util.zip.ZipOutputStream
 
 /**
  *
- * 替换MultiDexTransform, 自定义生成mainDexListFile
- *
  * @author cantalou
- * @date 2018年09月17日 16:30
+ * @date 2018/09/17 16:30
  *
  */
 @SuppressWarnings("unchecked")
@@ -151,7 +149,7 @@ class CustomMainDexTransform extends Transform {
     @Override
     void transform(@NonNull TransformInvocation invocation) throws IOException, TransformException, InterruptedException {
         try {
-            File jarFile = new File(outputDir, "combined_classes.jar")
+            File jarFile = new File(outputDir, "combined.jar")
             mergeJar(invocation.getReferencedInputs(), jarFile)
             shrinkJar(jarFile)
             computeList(jarFile)

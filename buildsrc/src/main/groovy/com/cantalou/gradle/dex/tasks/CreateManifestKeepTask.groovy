@@ -7,9 +7,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
-import org.gradle.internal.impldep.com.google.common.collect.ImmutableSet
 import org.xml.sax.Attributes
 import org.xml.sax.SAXException
 import org.xml.sax.helpers.DefaultHandler
@@ -24,7 +22,7 @@ import static com.android.SdkConstants.FN_ANDROID_MANIFEST_XML
  * Custom implement to create manifest_keep.txt file
  *
  * @author cantalou
- * @date 2018年09月18日 17:45
+ * @date 2018/09/18 17:45
  *
  * */
 class CreateManifestKeepTask extends DefaultTask {
@@ -48,9 +46,7 @@ class CreateManifestKeepTask extends DefaultTask {
     Set<File> getSources() {
         configurations.each { Configuration configuration ->
             try {
-                if (configuration.isCanBeResolved()) {
-                    configuration.setCanBeResolved(true)
-                }
+                configuration.setCanBeResolved(true)
                 manifestSources.addAll(configuration.getFiles().findAll { it.name.endsWith(".aar") })
                 configuration.getDependencies().findAll {
                     it instanceof ProjectDependency && it.dependencyProject.hasProperty("android")
@@ -97,9 +93,7 @@ class CreateManifestKeepTask extends DefaultTask {
                 } else {
                     return source
                 }
-            }
-
-            getManifestSources().each { File manifestFile ->
+            }.each { File manifestFile ->
                 parser.parse(manifestFile, new ManifestHandler(out))
             }
         }

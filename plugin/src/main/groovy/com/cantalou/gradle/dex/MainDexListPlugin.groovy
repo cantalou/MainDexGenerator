@@ -21,13 +21,12 @@ import static com.android.builder.model.AndroidProject.FD_INTERMEDIATES
 
 /**
  *
- * 1.定义CreateManifestKeepTask用于生成manifest_keep.txt文件
- * 2.替换MultiDexTransform, 生成mainDexListFile.txt文件
+ * 1. Create CreateManifestKeepTask to generate manifest_keep.txt
+ * 2. Create MultiDexTransform to generate mainDexListFile.txt
  *
- * @author LinZhiWei
+ * @author cantalou
  * @date 2018年09月17日 16:30
  *
- * Copyright (c) 2018年, 4399 Network CO.ltd. All Rights Reserved.
  */
 class MainDexListPlugin implements Plugin<Project> {
 
