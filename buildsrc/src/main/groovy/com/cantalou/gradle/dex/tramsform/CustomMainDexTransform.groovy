@@ -7,10 +7,9 @@ import com.android.build.gradle.internal.dsl.DexOptions
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.scope.VariantScope
 import com.android.build.gradle.internal.transforms.MultiDexTransform
-import com.android.builder.packaging.JarMerger
 import com.android.builder.sdk.TargetInfo
 import com.android.ide.common.process.ProcessException
-import com.android.utils.FileUtils
+import com.cantalou.gradle.dex.util.JarMerger
 import com.google.common.base.Charsets
 import com.google.common.base.Joiner
 import com.google.common.collect.ImmutableMap

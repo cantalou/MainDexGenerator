@@ -45,17 +45,11 @@ class CreateManifestKeepTask extends DefaultTask {
     @InputFiles
     Set<File> getSources() {
         configurations.each { Configuration configuration ->
-            try {
-                configuration.setCanBeResolved(true)
-                manifestSources.addAll(configuration.getFiles().findAll { it.name.endsWith(".aar") })
-                configuration.getDependencies().findAll {
-                    it instanceof ProjectDependency && it.dependencyProject.hasProperty("android")
-                }.each {
-                    manifestSources << it.dependencyProject.android.sourceSets.main.manifest.srcFile
-                }
-            } catch (Exception e) {
-                println "Configuration ${configuration} can not be resolve "
-                //e.printStackTrace()
+            manifestSources.addAll(configuration.getFiles().findAll { it.name.endsWith(".aar") })
+            configuration.getDependencies().findAll {
+                it instanceof ProjectDependency && it.dependencyProject.hasProperty("android")
+            }.each {
+                manifestSources << it.dependencyProject.android.sourceSets.main.manifest.srcFile
             }
         }
         return manifestSources
@@ -94,6 +88,7 @@ class CreateManifestKeepTask extends DefaultTask {
                     return source
                 }
             }.each { File manifestFile ->
+                println "Starting to parse ${manifestFile}"
                 parser.parse(manifestFile, new ManifestHandler(out))
             }
         }

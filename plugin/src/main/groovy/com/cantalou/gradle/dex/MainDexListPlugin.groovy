@@ -46,7 +46,7 @@ class MainDexListPlugin implements Plugin<Project> {
         project.android.applicationVariants.all { ApplicationVariant variant ->
 
             VariantScope variantScope = variant.variantData.scope
-            if (!variantScope.getNeedsMainDexList()) {
+            if (!variantScope.getVariantConfiguration().getDexingType().getNeedsMainDexList()) {
                 return
             }
 

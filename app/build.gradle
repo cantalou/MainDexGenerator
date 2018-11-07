@@ -1,23 +1,28 @@
-import com.cantalou.gradle.dex.MainDexListPlugin
-
 apply plugin: 'com.android.application'
 apply plugin: com.cantalou.gradle.dex.MainDexListPlugin
 
 android {
     compileSdkVersion 27
+    buildToolsVersion "27.0.3"
     defaultConfig {
         applicationId "com.cantalou.android.tools.dex"
-        minSdkVersion 15
+        minSdkVersion 14
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         javaCompileOptions.annotationProcessorOptions.includeCompileClasspath = true
         manifestPlaceholders = [
-                                GETUI_APP_ID       : "1",
-                                GETUI_APP_SECRET   : "1",
-                                GETUI_APP_KEY      : "1"
+                HUAWEI_APP_ID    : "1",
+                MEIZU_APP_ID    : "1",
+                MEIZU_APP_KEY    : "1",
+                XIAOMI_APP_ID    : "1",
+                XIAOMI_APP_KEY    : "1",
+                GETUI_APP_ID    : "1",
+                GETUI_APP_SECRET: "1",
+                GETUI_APP_KEY   : "1"
         ]
+        multiDexEnabled true
     }
     dexOptions {
         javaMaxHeapSize "4096m"
@@ -30,12 +35,10 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
-            multiDexEnabled true
         }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            multiDexEnabled true
         }
     }
     compileOptions {
@@ -45,30 +48,29 @@ android {
 }
 
 dependencies {
-    implementation 'com.getui:sdk:2.12.3.0'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.4'
-    implementation 'com.android.support:design:27.1.1'
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation 'com.google.dagger:dagger:2.2'
-    implementation 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
-    implementation 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
-    implementation 'com.google.code.gson:gson:2.8.2'
-    implementation 'commons-io:commons-io:2.0.1'
-    implementation "com.google.guava:guava:17.0"
-    implementation "org.ow2.asm:asm-debug-all:5.0.1"
-    implementation "org.jacoco:org.jacoco.core:0.7.4.201502262128"
-    implementation "org.antlr:antlr:3.5.2"
-    implementation 'com.github.bumptech.glide:volley-integration:1.2.2'
-    implementation 'com.mcxiaoke.volley:library:1.0.5'
-    implementation 'com.squareup.okhttp:okhttp:2.4.0'
-    implementation 'com.squareup.picasso:picasso:2.5.2'
-    implementation "com.squareup.retrofit:retrofit:1.4.1"
+    compile 'com.getui:sdk:2.12.3.0'
+    compile 'com.getui:hwp:1.0.3'
+    compile 'com.getui:mzp:1.0.4'
+    compile 'com.getui:xmp:1.0.2'
+    compile 'io.reactivex.rxjava2:rxjava:2.1.4'
+    compile 'com.android.support:design:27.1.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.google.dagger:dagger:2.2'
+    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile 'commons-io:commons-io:2.0.1'
+    compile "com.google.guava:guava:17.0"
+    compile "org.ow2.asm:asm-debug-all:5.0.1"
+    compile "org.jacoco:org.jacoco.core:0.7.4.201502262128"
+    compile "org.antlr:antlr:3.5.2"
+    compile 'com.mcxiaoke.volley:library:1.0.5'
+    compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile "com.squareup.retrofit:retrofit:1.4.1"
 
-    implementation 'org.apache.commons:commons-collections4:4.2'
-    implementation 'org.apache.commons:commons-lang3:3.8.1'
-    implementation 'com.github.bumptech.glide:glide:4.8.0'
+    compile 'org.apache.commons:commons-collections4:4.2'
+    compile 'org.apache.commons:commons-lang3:3.8.1'
+    compile 'com.github.bumptech.glide:glide:4.8.0'
 
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }

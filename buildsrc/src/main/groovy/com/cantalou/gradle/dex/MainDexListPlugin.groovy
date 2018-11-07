@@ -5,12 +5,14 @@ import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.internal.dsl.DexOptions
 import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.scope.VariantScope
+import com.android.builder.model.Version
 import com.cantalou.gradle.dex.tasks.CreateManifestKeepTask
 import com.cantalou.gradle.dex.tramsform.CustomMainDexTransform
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
+import org.gradle.util.VersionNumber
 
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
@@ -25,8 +27,6 @@ import static com.android.builder.model.AndroidProject.FD_INTERMEDIATES
  */
 class MainDexListPlugin implements Plugin<Project> {
 
-    def configurations
-
     @Override
     void apply(Project project) {
 
@@ -39,13 +39,14 @@ class MainDexListPlugin implements Plugin<Project> {
         project.android.applicationVariants.all { ApplicationVariant variant ->
 
             VariantScope variantScope = variant.variantData.scope
-            if (!variantScope.getNeedsMainDexList()) {
+            def needMainDexList = isNeedMainDexList(variantScope)
+            println "Variant ${variant.name} needMainDexList ${needMainDexList}"
+            if (!needMainDexList) {
                 return
             }
 
             def capitalizeName = variant.name.capitalize()
 
-            //legacy_multidex_main_dex_list
             def outputDir = new File(project.buildDir.absolutePath + "/" + FD_INTERMEDIATES + "/multi-dex/" + variant.dirName)
             def manifestKeepFile = new File(outputDir, "manifest_keep.txt")
             manifestKeepFile.parentFile.mkdirs()
@@ -73,11 +74,15 @@ class MainDexListPlugin implements Plugin<Project> {
             def mainDexListFile = new File(outputDir, "maindexlist.txt")
             def dexTask = project.tasks.findByName("transformDexArchiveWithDexMergerFor${capitalizeName}")
             if (dexTask == null) {
-                dexTask = project.tasks.findByName("transformDexArchiveWithDexMergerFor${capitalizeName}")
+                dexTask = project.tasks.findByName("transformClassesWithDexFor${capitalizeName}")
             }
             Transform dexTransform = dexTask.transform
             dexTransform.getSecondaryFiles().each { secondaryFile ->
-                mainDexListFile = secondaryFile.getFileCollection(project).singleFile
+                if (secondaryFile.hasProperty("secondaryInputFile")) {
+                    mainDexListFile = secondaryFile.getFile()
+                } else {
+                    mainDexListFile = secondaryFile.getFileCollection(project).singleFile
+                }
             }
 
             Transform mainDexTransform = multiDexListTask.transform
@@ -98,6 +103,10 @@ class MainDexListPlugin implements Plugin<Project> {
                 }
             }
         }
+    }
+
+    private boolean isNeedMainDexList(VariantScope variantScope) {
+        VersionNumber.parse(Version.ANDROID_GRADLE_PLUGIN_VERSION) > VersionNumber.parse("3.0.0") && variantScope.getNeedsMainDexList() || variantScope.getVariantConfiguration().isLegacyMultiDexMode()
     }
 
     def copyConfigurations(def project, def buildType) {
