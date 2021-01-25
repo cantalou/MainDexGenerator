@@ -13,11 +13,11 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         javaCompileOptions.annotationProcessorOptions.includeCompileClasspath = true
         manifestPlaceholders = [
-                HUAWEI_APP_ID    : "1",
+                HUAWEI_APP_ID   : "1",
                 MEIZU_APP_ID    : "1",
-                MEIZU_APP_KEY    : "1",
-                XIAOMI_APP_ID    : "1",
-                XIAOMI_APP_KEY    : "1",
+                MEIZU_APP_KEY   : "1",
+                XIAOMI_APP_ID   : "1",
+                XIAOMI_APP_KEY  : "1",
                 GETUI_APP_ID    : "1",
                 GETUI_APP_SECRET: "1",
                 GETUI_APP_KEY   : "1"

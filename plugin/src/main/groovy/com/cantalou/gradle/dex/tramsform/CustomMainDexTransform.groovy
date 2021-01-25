@@ -38,8 +38,7 @@ import static com.android.builder.model.AndroidProject.FD_INTERMEDIATES
  *
  * 替换MultiDexTransform, 自定义生成mainDexListFile
  *
- * @author cantalou
- * @date 2018年09月17日 16:30
+ * @author cantalou* @date 2018年09月17日 16:30
  *
  */
 @SuppressWarnings("unchecked")
@@ -69,7 +68,7 @@ class CustomMainDexTransform extends Transform {
     CustomMainDexTransform(VariantScope variantScope, DexOptions dexOptions, File includeInMainDexJarFile) {
         this.variantScope = variantScope
         this.includeInMainDexJarFile = includeInMainDexJarFile
-        userMainDexKeepFile =  variantScope.getVariantConfiguration().getMultiDexKeepFile()
+        userMainDexKeepFile = variantScope.getVariantConfiguration().getMultiDexKeepFile()
         keepRuntimeAnnotatedClasses = dexOptions.getKeepRuntimeAnnotatedClasses()
     }
 
@@ -109,19 +108,19 @@ class CustomMainDexTransform extends Transform {
         Collection result = Arrays.asList(manifestKeepListFile, userMainDexKeepFile, includeInMainDexJarFile)
                 .stream()
                 .filter(new java.util.function.Predicate<File>()
-        {
-            @Override
-            boolean test(File file) {
-                return file != null
-            }
-        })
+                {
+                    @Override
+                    boolean test(File file) {
+                        return file != null
+                    }
+                })
                 .map(new Function<File, SecondaryFile>()
-        {
-            @Override
-            SecondaryFile apply(File file) {
-                return SecondaryFile.nonIncremental(file)
-            }
-        })
+                {
+                    @Override
+                    SecondaryFile apply(File file) {
+                        return SecondaryFile.nonIncremental(file)
+                    }
+                })
                 .collect(Collectors.toList())
         return result
     }
@@ -185,8 +184,7 @@ class CustomMainDexTransform extends Transform {
     /**
      * Extract class from "input".jar by comparing className which was listed in "manifestKeepListFile" file
      * @param input
-     * @throws IOException
-     * @throws ParseException
+     * @throws IOException* @throws ParseException
      */
     private void shrinkJar(@NonNull File input) throws IOException, ParseException {
 
