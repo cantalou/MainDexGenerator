@@ -22,16 +22,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 /**
- *
- * Android Gradle Plugin 扩展
- *
- * @author  LinZhiWei
- * @date    2020年01月02日 11:22
- *
- * Copyright (c) 2020年, 4399 Network CO.ltd. All Rights Reserved.
- */
-
-/**
  * 返回引入的 "com.android.application" 或者 "com.android.library" 插件的扩展对象, 这个对象不包含 "applicationVariant" 和 "libraryVariant"
  */
 val Project.android: BaseExtension

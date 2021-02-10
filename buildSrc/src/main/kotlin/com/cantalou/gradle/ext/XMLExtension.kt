@@ -10,16 +10,6 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
-/**
- *
- * 操作XML文件的扩展
- *
- * @author  LinZhiWei
- * @date    2020年03月10日 16:43
- *
- * Copyright (c) 2020年, 4399 Network CO.ltd. All Rights Reserved.
- */
-
 fun Node.createMetaData(name: String, value: Any) {
     val metaData = ownerDocument.createElement("meta-data")
     metaData.setAttribute("android:name", name)

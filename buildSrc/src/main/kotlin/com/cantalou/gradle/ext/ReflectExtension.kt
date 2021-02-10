@@ -3,16 +3,6 @@ package com.cantalou.gradle.ext
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
-/**
- *
- * 反射工具类
- *
- * @author  LinZhiWei
- * @date    2020年04月03日 13:49
- *
- * Copyright (c) 2020年, 4399 Network CO.ltd. All Rights Reserved.
- */
-
 fun Any.get(fieldName: String) : Any?{
     val field = findField(this.javaClass, fieldName)!!
     return field.get(this)
