@@ -1,9 +1,7 @@
 apply plugin: 'com.android.application'
-apply plugin: com.cantalou.gradle.dex.MainDexListPlugin
 
 android {
     compileSdkVersion 27
-    buildToolsVersion "27.0.3"
     defaultConfig {
         applicationId "com.cantalou.android.tools.dex"
         minSdkVersion 14
@@ -24,14 +22,7 @@ android {
         ]
         multiDexEnabled true
     }
-    dexOptions {
-        javaMaxHeapSize "4096m"
-        threadCount 4
-        maxProcessCount 4
-        preDexLibraries = false
-        jumboMode = false
-        additionalParameters "--set-max-idx-number=52000", "--minimal-main-dex"
-    }
+
     buildTypes {
         debug {
             minifyEnabled false

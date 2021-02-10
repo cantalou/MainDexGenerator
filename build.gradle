@@ -8,9 +8,7 @@ buildscript {
         maven { url uri("./plugin/publish") }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.3'
-        classpath "com.cantalou.android.tools:mainDexGenerator:1.0.0"
-        classpath 'org.jacoco:org.jacoco.core:0.7.9'
+        classpath 'com.android.tools.build:gradle:3.5.3'
     }
 }
 
